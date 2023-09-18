@@ -18,28 +18,29 @@ Public Sub ExportProject()
         Dim Component As VBComponent
         For Each Component In ThisWorkbook.VBProject.VBComponents
             Dim Code As String: Code = Component.codeModule.Lines(1, Component.codeModule.CountOfLines)
-            If InString(Code, vbTextCompare, "src") Then
-                Dim Match As Object: Set Match = CRegExp.Execute(Code, "@folder\s*\(*\""(.*)\""", i:=True)
-                If Match Is Nothing Then Goto Continue
+            If InString(Code, vbTextCompare, "ipm-modules") And Not InString(Code, vbTextCompare, "ExportProject") Then Goto Continue
+                If InString(Code, vbTextCompare, "src") Then
+                    Dim Match As Object: Set Match = CRegExp.Execute(Code, "@folder\s*\(*\""(.*)\""", i:=True)
+                    If Match Is Nothing Then Goto Continue
 
-                    Dim Folder As String: Folder = Match(0).SubMatches(0)
-                    Folder = Strings.Split(Folder, ".", 2)(UBound(Strings.Split(Folder, ".", 2)))
-                    Folder = RootFolder & Application.PathSeparator & Strings.Replace(Folder, ".", Application.PathSeparator)
+                        Dim Folder As String: Folder = Match(0).SubMatches(0)
+                        Folder = Strings.Split(Folder, ".", 2)(UBound(Strings.Split(Folder, ".", 2)))
+                        Folder = RootFolder & Application.PathSeparator & Strings.Replace(Folder, ".", Application.PathSeparator)
 
-                    Dim FSO As FileSystemObject: Set FSO = New FileSystemObject
-                    If Not FSO.FolderExists(Folder) Then
-                        FSO.CreateFolder Folder
-                    End If
-
-                    Dim FilePath As String
-                    FilePath = Folder & Application.PathSeparator & Component.Name
-                    If Component.Type = vbext_ct_ClassModule Then FilePath = FilePath & ".cls"
-                        If Component.Type = vbext_ct_StdModule Then FilePath = FilePath & ".bas"
-
-                            Component.Export FilePath
+                        Dim FSO As FileSystemObject: Set FSO = New FileSystemObject
+                        If Not FSO.FolderExists(Folder) Then
+                            FSO.CreateFolder Folder
                         End If
+
+                        Dim FilePath As String
+                        FilePath = Folder & Application.PathSeparator & Component.Name
+                        If Component.Type = vbext_ct_ClassModule Then FilePath = FilePath & ".cls"
+                            If Component.Type = vbext_ct_StdModule Then FilePath = FilePath & ".bas"
+
+                                Component.Export FilePath
+                            End If
  Continue:
-                        Next
+                            Next
 End Sub
 
 Public Function IsEqual(Byval String1 As String, Byval String2 As String, Optional Byval Compare As VbCompareMethod = vbTextCompare) As Boolean
